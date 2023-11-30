@@ -1,30 +1,108 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Home from './components/Home';
-import Blogs from './components/Blog';
-import About from './components/About';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import {
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+} from "react-router-dom";
+import Home from "./components/Home";
+import Blogs from "./components/Blog";
+import About from "./components/About";
+
+import "./server";
+import VansList, { loader as vanListLoader } from "./components/VansList";
+import VanDetail,{loader as vanListDetailLoader} from "./components/VanDetail";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Income from "./pages/Income";
+import Reviews from "./pages/Reviews";
+import HostLayout from "./components/HostLayout";
+import HostVans, { loader as getHostVansLoader } from "./pages/Host/HostVans";
+import HostVansDetail,{loader as hostVansDetailLoader} from "./pages/Host/HostVansDetail";
+import HostVanPricing from "./pages/Host/HostVanPricing";
+import HostVanInfo from "./pages/Host/HostVanInfo";
+import HostVanPhotos from "./pages/Host/HostVanPhotos";
+import NotFound from "./pages/NotFound/NotFound";
+import ErrorDisplay from "./Error/ErrorDisplay";
+import Login, {loader as loginLoader, action as loginAction} from "./pages/Login";
+import { requireAuth } from "./utils/utils";
+
+//This is for data api above 6 and preferred
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path="/" element={<Layout />} >
+      <Route index element={<Home />}   l/>
+      <Route path="blogs" element={<Blogs />}  />
+      <Route path="/login" element={<Login />} loader={loginLoader} action={loginAction} />
+      <Route path="about" element={<About />} />
 
 
-import "./server"
-import VansList from './components/VansList';
-import VanDetail from './components/VanDetail';
-import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Income from './pages/Income';
-import Reviews from './pages/Reviews';
-import HostLayout from './components/HostLayout';
-import HostVans from './pages/Host/HostVans';
-import HostVansDetail from './pages/Host/HostVansDetail';
-import HostVansDetailLayout from './pages/Host/HostVansDetailLayout';
-import HostVanPricing from './pages/Host/HostVanPricing';
-import HostVanInfo from './pages/Host/HostVanInfo';
-import HostVanPhotos from './pages/Host/HostVanPhotos';
-import NotFound from './pages/NotFound/NotFound';
+      <Route
+        path="list"
+        element={<VansList />}
+        errorElement={<ErrorDisplay />}
+        loader={vanListLoader}
+      />
+      <Route path="list/:id" loader={vanListDetailLoader} element={<VanDetail />} />
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+      <Route path="host" element={<HostLayout />} >
+        <Route
+          index
+          loader={async ({request}) =>  await requireAuth(request)}
+          element={<Dashboard />}
+        />
+
+        <Route
+          path="income"          
+          element={<Income />}
+          loader={async ({request}) =>  await requireAuth(request)}
+        />
+
+        
+
+        <Route
+          path="vans"
+          element={<HostVans />}
+          loader={getHostVansLoader}
+        />
+
+        <Route
+          path="vans/:id"
+          element={<HostVansDetail />}
+          loader={hostVansDetailLoader}
+        >
+          <Route
+            index
+            element={<HostVanInfo />}
+            loader={async ({request}) =>  await requireAuth()}
+          />
+          <Route
+            path="pricing"
+            element={<HostVanPricing />}
+            loader={async ({request}) =>  await requireAuth()}
+          />
+          <Route
+            path="photos"
+            element={<HostVanPhotos />}
+            loader={async ({request}) =>  await requireAuth()}
+          />
+        </Route>
+
+        <Route path="reviews" element={<Reviews />}  loader={async ({request}) =>  await requireAuth()}/>
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Route>
+  )
+);
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <BrowserRouter>
+  <>
+    <RouterProvider router={router} />
+
+    {/*This is not supported by data api 6
+   <BrowserRouter>
 
   <Routes>
 
@@ -55,7 +133,8 @@ root.render(
   </Routes>
    
   
-  </BrowserRouter>
+  </BrowserRouter> */}
+  </>
 );
 
 // If you want to start measuring performance in your app, pass a function

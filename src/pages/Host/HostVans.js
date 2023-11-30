@@ -1,22 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLoaderData } from "react-router-dom";
 
 import "../../../src/server"
+import { getHostVans, getVans } from "../../api";
+import { requireAuth } from "../../utils/utils";
+
+
+export async function loader({request}){
+    await requireAuth(request)
+    return getHostVans()
+} 
 
 export default function HostVans(){
-    const[vans,setVans]=useState([])
-
-    useEffect(function(){
-        async function getAllVans(){
-            const res=await fetch("/api/host/vans")
-            const data=await res.json()
-           setVans(data.vans)
-        }
-        getAllVans()
-    },[])
-
-    console.log(vans)
-
+    const vans=useLoaderData()
 
     const vanElements=vans.map((van,index)=>(
         
@@ -46,7 +42,7 @@ export default function HostVans(){
         <>
         <div className="container mt-2  p-3 ">
             <h3>Your Listed Vans</h3>
-            {vans.length>0 ? vanElements: "Loading...."}
+            {vanElements}
 
         </div>
         </>
